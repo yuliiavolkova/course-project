@@ -79,7 +79,53 @@ presetSelect.addEventListener("change", () => {
 // Якщо користувач вибрав Start Date, то поле для End Date стає активним і навпаки
 startDateInput.addEventListener("change", () => {
   endDateInput.disabled = !startDateInput.value;
+  presetSelect.disabled = !startDateInput.value;
 });
+
+function countDays(startDate, endDate, dayType = "all", resultType = "days") {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  // Переконатися, що start < end
+  if (start > end) {
+    [start, end] = [end, start];
+  }
+
+  let totalDays = 0;
+  let workingDays = 0;
+  let weekendDays = 0;
+
+  for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+    totalDays++;
+    const dayOfWeek = d.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      weekendDays++;
+    } else {
+      workingDays++;
+    }
+  }
+
+  let result;
+  if (dayType === "weekdays") {
+    result = workingDays;
+  } else if (dayType === "weekends") {
+    result = weekendDays;
+  } else {
+    result = totalDays;
+  }
+
+  // Перетворення результату в години, хвилини або секунди
+  switch (resultType) {
+    case "hours":
+      return result * 24;
+    case "minutes":
+      return result * 24 * 60;
+    case "seconds":
+      return result * 24 * 60 * 60;
+    default: // 'days'
+      return result;
+  }
+}
 
 // Time range обчислення
 calculateBtn.addEventListener("click", () => {
@@ -95,20 +141,10 @@ calculateBtn.addEventListener("click", () => {
     return;
   }
 
-  const diffInMs = endDate - startDate; // обчислення різниці між датами у мілісекундах
-  let result;
+  const unit = unitSelect.value; //
+  const dateType = daysTypeSelect.value; //
 
-  // Обчислення результату в заданих одиницях
-  const unit = unitSelect.value; // в залежності від вибору одиниць вимірювання користувачем, результат перетвориться у необхідний
-  if (unit === "days") {
-    result = diffInMs / (1000 * 60 * 60 * 24);
-  } else if (unit === "hours") {
-    result = diffInMs / (1000 * 60 * 60);
-  } else if (unit === "minutes") {
-    result = diffInMs / (1000 * 60);
-  } else if (unit === "seconds") {
-    result = diffInMs / 1000;
-  }
+  const result = countDays(startDate, endDate, dateType, unit);
 
   const resultText = `${result.toFixed(2)} ${unit}`; // toFixed - округлює результат до 2 знаків після коми
   calculationHistory.push({
@@ -153,6 +189,9 @@ getHolidaysBtn.addEventListener("click", () => {
   const country = countrySelect.value;
   const year = yearInput.value;
 
+  //Показуємо лоадер перед початком запиту
+  loader.style.display = "block";
+
   fetch(
     `https://calendarific.com/api/v2/holidays?&api_key=${apiKey}&country=${country}&year=${year}`
   )
@@ -165,9 +204,11 @@ getHolidaysBtn.addEventListener("click", () => {
         row.innerHTML = `<td>${holiday.date.iso}</td><td>${holiday.name}</td>`;
         holidaysTableBody.appendChild(row);
       });
+      loader.style.display = "none";
     })
     .catch((e) => {
       alert("Something wrong!");
+      loader.style.display = "none"; // коли помилка теж ховаємо лоадер
     });
 });
 

@@ -17,6 +17,13 @@
       .tab-buttons button {
         margin-right: 10px;
       }
+      #loader {
+        font-size: 16px;
+        color: #333;
+        text-align: center;
+        margin-top: 10px;
+        display: none; /* Прихований за замовчуванням */
+      }
     </style>
   </head>
   <body>
@@ -36,7 +43,7 @@
 
       <!-- Presets and Options -->
       <label for="preset">Select Preset:</label>
-      <select id="preset">
+      <select id="preset" disabled>
         <option value="">None</option>
         <option value="week">1 Week (7 days)</option>
         <option value="month">1 Month (30 days)</option>
@@ -93,6 +100,9 @@
         disabled
       />
       <button id="get-holidays-btn">Get Holidays</button>
+
+      <!-- Loader -->
+      <div id="loader" style="display: none">Loading...</div>
 
       <!-- Holidays Results-->
       <h3>Holidays Results</h3>
